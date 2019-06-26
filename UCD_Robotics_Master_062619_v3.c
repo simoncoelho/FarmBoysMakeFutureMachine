@@ -787,6 +787,7 @@ void go_straight_check_color(void) {
 	rightBits = countSetBits(binaryImage[1]) + countSetBits(binaryImage[0]);
  
   MASTER_COLOR = 0;
+  COLOR_SUM = 0;
 
 	while (leftBits + rightBits < 410) {
 		// navigation loop goes here
