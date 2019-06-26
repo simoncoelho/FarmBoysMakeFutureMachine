@@ -683,12 +683,12 @@ void check_color(void){
   
   if (CS_RED_VOLTS > CS_GREEN_VOLTS) {
     
-    COLOR = 1; //red plant
+    COLOR = -1; //red plant
     
   } 
   if (CS_RED_VOLTS < CS_GREEN_VOLTS) {
     
-    COLOR = -1; //green plant
+    COLOR = 1; //green plant
     
   }   
   
