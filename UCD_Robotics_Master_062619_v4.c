@@ -482,7 +482,7 @@ void check_IR_drop(void) {
 	IR_volts = IR_volts / 10.0;
 
 	if (IR_volts > 0.6) {
-		IR_PLANT_PLANT = 1; //plant present
+		IR_PLANT_DROP = 1; //plant present
 	}
 
 	if (IR_volts < 0.6) {
