@@ -282,7 +282,7 @@ void pick_plant(void) {
 
 	drive_speed(leftSpeed, rightSpeed);
 
-	pause(1300);
+	pause(800);
 
 	rotate_robot_half_turn(BOARD_DIRECTION);
 
@@ -307,7 +307,7 @@ void pick_plant(void) {
 	rightSpeed = TRAVELSPEED;
 
 	drive_speed(leftSpeed, rightSpeed);
-	pause(1500);
+	pause(1300);
 	rotate_robot_half_turn(-1 * BOARD_DIRECTION);
 
 
@@ -444,7 +444,7 @@ void check_IR_distance(void) {
 
 	IR_volts = IR_volts / 10.0;
 
-	if (IR_volts > 0.4 && IR_volts < 0.7) {
+	if (IR_volts > 0.4) {
 		IR_PLANT = 1; //plant present
 	}
 
@@ -526,4 +526,202 @@ void go_straight_check_IR(void) {
 
 	drive_speed(leftSpeed, rightSpeed);
 
+}
+
+void blind_turn(int BOARD_DIRECTION) {
+
+	rotate_robot(BOARD_DIRECTION);
+
+	leftSpeed = TRAVELSPEED;
+	rightSpeed = TRAVELSPEED;
+
+	drive_speed(-1 * leftSpeed, -1 * rightSpeed);
+
+	pause(1500);
+
+	leftSpeed = 0;
+	rightSpeed = 0;
+
+	drive_speed(leftSpeed, rightSpeed);
+
+
+}
+
+void go_to_line(void) {
+
+	unsigned int leftBits; //All of the bits read in by the line following camera from center-left -> left
+	unsigned int rightBits; //All of the bits read in by the line following camera from center-right -> right
+
+	leftBits = countSetBits(binaryImage[3]) + countSetBits(binaryImage[2]);
+	rightBits = countSetBits(binaryImage[1]) + countSetBits(binaryImage[0]);
+
+	//
+
+	while (leftBits + rightBits < 410) {
+		// navigation loop goes here
+		leftSpeed = TRAVELSPEED;
+		rightSpeed = TRAVELSPEED;
+		drive_speed(leftSpeed, rightSpeed);
+
+		leftBits = countSetBits(binaryImage[3]) + countSetBits(binaryImage[2]);
+		rightBits = countSetBits(binaryImage[1]) + countSetBits(binaryImage[0]);
+
+
+	}
+
+
+	leftSpeed = 0;
+	rightSpeed = 0;
+	drive_speed(leftSpeed, rightSpeed);
+
+
+
+}
+
+void rotate_robot_backwards(int Cwise_or_CCwise){
+	// Turns robot 90 deg to left or right
+	// Input can either be a -1 (counterclockwise) or +1 (clockwise)
+
+	int leftSpeed, rightSpeed;
+	float axel_length; // Distance (mm) between wheels
+	float ticks_per_mm; // Ticks per mm defined by abdrive.h
+	float turn_speed; // Time (s) to complete the 90 degree turn
+
+	axel_length = 140;
+	ticks_per_mm = 3.25;
+	turn_speed = 1.5;
+
+	leftSpeed = (3.14 * (axel_length / 4.0) * (1.0 / turn_speed) * (1.0 / ticks_per_mm));
+	rightSpeed = (3.14 * (axel_length / 4.0) * (1.0 / turn_speed) * (1.0 / ticks_per_mm));
+
+	//print("\n %d %d", leftSpeed, rightSpeed);
+
+
+	if (Cwise_or_CCwise > 0) {
+		leftSpeed = leftSpeed * 0.5;
+		rightSpeed = rightSpeed * -1; // Slows down the inner wheel for a smoother turn
+	}
+
+	if (Cwise_or_CCwise < 0) {
+		leftSpeed = leftSpeed * -1; // Slows down the inner wheel for a smoother turn
+		rightSpeed = rightSpeed * 0.5;
+	}
+
+	drive_speed(leftSpeed, rightSpeed);
+
+	pause(turn_speed * 1250.0);  // Slightly increased the turning time because it wasnt rotating fully
+
+	leftSpeed = 0;
+	rightSpeed = 0;
+
+	drive_speed(leftSpeed, rightSpeed);
+
+}
+
+/*
+void drop_plant(void) {
+	// Insert code here
+}
+*/
+
+/*
+int go_straight_check_color_check_intersection(void) {
+	// Insert code here
+}
+void turn_towards_intersection(void) {
+	// Insert code here
+}
+*/
+
+int main() {
+	int j;
+	int CURRENT_PLANT;
+	print("Started\n");
+	adc_init(21, 20, 19, 18);
+	pause(500);
+	for (j = 0; j < 5; j++) posError[j] = 0;  // initialize position error array
+	//simpleterm_close();  // Close SimpleIDE Terminal for this core
+
+  // setting up the exposure parameters for a snapshot
+	expTime_ms = 10;
+	low(PIN_CLK_C);      // CLK pin low
+	cogstart(getImage, NULL, stack, sizeof(stack));
+	cogstart(bitSearch, NULL, stack2, sizeof(stack2)); // start printImageToTerminal process in new cog
+	//cogstart(printImageToTerminal, NULL, stack3, sizeof(stack3)); // start printImageToTerminal process in new cog
+
+  //  the following code shows an optional Autoexposure routine.  It is typically not needed in the class room with constant lighting.
+  /*
+	for(expTime_ms = 5, mj = 0, expSum = 0; expTime_ms < 12; expTime_ms++) {
+	  while(input(OSCILLOSCOPE) == 1); // wait for new image to be exposed
+	  while(input(OSCILLOSCOPE) == 0); // wait for new image to be available
+	  if(zeroSum > 7 && zeroSum < 14) { mj++; expSum += expTime_ms; }
+	  if(mj == 8) break;  // Stop once 10 acceptable images are obtained
+	 }
+	if(mj) expTime_ms = expSum/mj; // calculate the average exposure time
+	else expTime_ms = 7;
+	*/
+
+	set_board_direction();
+	if (BOARD_DIRECTION < 0) {
+		IR_PIN = IR_PIN_RIGHT;
+	}
+	if (BOARD_DIRECTION > 0) {
+		IR_PIN = IR_PIN_LEFT;
+	}
+
+	//cogstart(check_IR_distance, NULL, stack3, sizeof(stack3));
+
+	servo_angle(SERVO_PIN, 0);                         // P16 servo to 0 degrees
+
+	pause(1000);
+
+	CURRENT_PLANT = 8;
+
+
+	while (1) {
+
+
+		go_to_line();
+
+		rotate_robot(-1 * BOARD_DIRECTION);
+
+		while(CURRENT_PLANT > 0){
+
+			go_straight_check_IR();
+
+			pick_plant();
+
+			go_straight_check_intersection();
+
+			rotate_robot(BOARD_DIRECTION);
+
+			go_straight_check_intersection();
+
+			rotate_robot(BOARD_DIRECTION);
+
+			go_straight_check_IR();
+
+	    drop_plant();
+
+			go_straight_check_intersection();
+
+			rotate_robot(BOARD_DIRECTION);
+
+			go_straight_check_intersection();
+
+			rotate_robot_backwards(BOARD_DIRECTION);
+
+			CURRENT_PLANT = CURRENT_PLANT -1;
+
+		}
+
+		pause (10000);
+
+		//blind_turn( BOARD_DIRECTION );
+
+		//pause(3000);
+
+
+
+	}
 }
