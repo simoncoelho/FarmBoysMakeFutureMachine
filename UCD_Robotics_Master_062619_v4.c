@@ -892,6 +892,8 @@ int main() {
 	low(PIN_CLK_C);      // CLK pin low
 	cogstart(getImage, NULL, stack, sizeof(stack));
 	cogstart(bitSearch, NULL, stack2, sizeof(stack2)); // start printImageToTerminal process in new cog
+	cog_run(background, 128);
+
 	//cogstart(printImageToTerminal, NULL, stack3, sizeof(stack3)); // start printImageToTerminal process in new cog
 
   //  the following code shows an optional Autoexposure routine.  It is typically not needed in the class room with constant lighting.
