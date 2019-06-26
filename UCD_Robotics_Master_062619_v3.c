@@ -910,7 +910,7 @@ int main() {
 
 			rotate_robot(BOARD_DIRECTION);
 
-			go_straight_check_IR();
+			go_straight_to_dropoff();
 
 	    drop_plant();
 
