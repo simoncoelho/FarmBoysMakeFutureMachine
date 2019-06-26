@@ -67,7 +67,7 @@
 
 static volatile short int zeroSum, lineLoc, setpoint = 63, posError[5], leftSpeed, rightSpeed, controlSignal;
 static volatile int frequency, expTime_ms, act_exp_time, expSum, mj, speed = 1;
-static volatile int binaryImage[4], derError[2], intError, IR_PLANT, IR_PIN, BOARD_DIRECTION, COLOR;
+static volatile int binaryImage[4], derError[2], intError, IR_PLANT, IR_PIN, BOARD_DIRECTION, COLOR, MASTER_COLOR;
 //static volatile unsigned char *b;
 static unsigned int stack[40 + 34], stack2[40 + 34], stack3[40 + 34]; // stacks for cogs, add more memory if you add variables or code.
 
@@ -777,6 +777,56 @@ void check_color(void){
 
 }
 
+void go_straight_check_color(void) {
+  
+  unsigned int leftBits; //All of the bits read in by the line following camera from center-left -> left
+	unsigned int rightBits; //All of the bits read in by the line following camera from center-right -> right
+  int COLOR_SUM;
+
+	leftBits = countSetBits(binaryImage[3]) + countSetBits(binaryImage[2]);
+	rightBits = countSetBits(binaryImage[1]) + countSetBits(binaryImage[0]);
+ 
+  MASTER_COLOR = 0;
+
+	while (leftBits + rightBits < 410) {
+		// navigation loop goes here
+		controlSignal = (int)(KP_HEADING * ((float)posError[4]) + (intError*KI_HEADING) + (derError[0] * KD_HEADING)); // posError[4] contains the most recent position error
+
+																														   // if integral or derivative control is desired
+		if (controlSignal > 20) controlSignal = 20; // limit the control signal to avoid wild overcorrections
+		if (controlSignal < -20) controlSignal = -20;
+
+		if (abs(controlSignal) < 10) {
+			leftSpeed = TRAVELSPEED + (CAMERA_ORIENTATION * (-1))*(controlSignal);  // 2018 Camera Orientation: Connector at Front
+			rightSpeed = TRAVELSPEED + (CAMERA_ORIENTATION * (+1))* (controlSignal); // Adjust the left and right wheel speeds
+		}
+		else {
+			leftSpeed = TRAVELSPEED + (CAMERA_ORIENTATION * (-1))*controlSignal;  // 2018 Camera Orientation: Connector at Front
+			rightSpeed = TRAVELSPEED + (CAMERA_ORIENTATION * (+1))* controlSignal; // Adjust the left and right wheel speeds
+		}
+
+		drive_speed(leftSpeed, rightSpeed); // set the drive_speed based upon the control signal
+		print(" %d , %d ", leftBits, rightBits);
+		leftBits = countSetBits(binaryImage[3]) + countSetBits(binaryImage[2]);
+		rightBits = countSetBits(binaryImage[1]) + countSetBits(binaryImage[0]);
+  
+    check_color();
+    COLOR_SUM = COLOR + COLOR_SUM;
+    
+	}
+
+  if (COLOR_SUM > 0) {
+    MASTER_COLOR = 1; //plant is green  
+  }    
+  if (COLOR_SUM < 0) {
+    MASTER_COLOR = -1; //plant is red
+  }    
+  
+	leftSpeed = 0;
+	rightSpeed = 0;
+	drive_speed(leftSpeed, rightSpeed);
+
+}  
 
 /*
 void drop_plant(void) {
@@ -855,7 +905,7 @@ int main() {
 
 			rotate_robot(BOARD_DIRECTION);
 
-			go_straight_check_intersection();
+			go_straight_check_color();
 
 			rotate_robot(BOARD_DIRECTION);
 
