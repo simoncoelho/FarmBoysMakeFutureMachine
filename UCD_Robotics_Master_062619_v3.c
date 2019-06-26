@@ -67,7 +67,7 @@
 
 static volatile short int zeroSum, lineLoc, setpoint = 63, posError[5], leftSpeed, rightSpeed, controlSignal;
 static volatile int frequency, expTime_ms, act_exp_time, expSum, mj, speed = 1;
-static volatile int binaryImage[4], derError[2], intError, IR_PLANT, IR_PIN, BOARD_DIRECTION, COLOR, MASTER_COLOR;
+static volatile int binaryImage[4], derError[2], intError, IR_PLANT, IR_PIN, BOARD_DIRECTION, COLOR, MASTER_COLOR, IR_PLANT_DROP;
 //static volatile unsigned char *b;
 static unsigned int stack[40 + 34], stack2[40 + 34], stack3[40 + 34]; // stacks for cogs, add more memory if you add variables or code.
 
@@ -474,11 +474,11 @@ void check_IR_drop(void) {
 	IR_volts = IR_volts / 10.0;
 
 	if (IR_volts > 0.6) {
-		IR_PLANT = 1; //plant present
+		IR_PLANT_PLANT = 1; //plant present
 	}
 
 	if (IR_volts < 0.6) {
-		IR_PLANT = 0; //plant not present
+		IR_PLANT_DROP = 0; //plant not present
 	}
   print("%d \n", IR_PLANT);
 }
@@ -592,9 +592,9 @@ void go_straight_to_dropoff(void) {
 
 	}
 
-	IR_PLANT = 0;
+	IR_PLANT_DROP = 0;
 
-	while (IR_PLANT < 1) {
+	while (IR_PLANT_DROP < 1) {
 		//printf("\x10");
 		print(" \n %d", IR_PLANT);
 		controlSignal = (int)(KP_HEADING * ((float)posError[4]) + (intError*KI_HEADING) + (derError[0] * KD_HEADING)); // posError[4] contains the most recent position error
@@ -618,10 +618,10 @@ void go_straight_to_dropoff(void) {
 		rightSpeed = TRAVELSPEED + ( CAMERA_ORIENTATION * (+1))* controlSignal; // Adjust the left and right wheel speeds */
 		drive_speed(leftSpeed, rightSpeed); // set the drive_speed based upon the control signal
 
-		check_IR_distance();
+		check_IR_drop();
 
 	}
-   print("IR_PLANT: 0");
+   	print("IR_PLANT: 0");
 
 	leftSpeed = 0;
 	rightSpeed = 0;
