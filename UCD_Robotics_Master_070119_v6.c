@@ -584,11 +584,11 @@ void check_IR_distance(void) {
 
 	IR_volts = IR_volts / 10.0;
 
-	if (IR_volts > 0.4) {
+	if (IR_volts > 0.6) {
 		IR_PLANT = 1; //plant present
 	}
 
-	if (IR_volts < 0.4) {
+	if (IR_volts < 0.6) {
 		IR_PLANT = 0; //plant not present
 	}
 }
