@@ -1257,8 +1257,11 @@ int main() {
 		}
 
 
+
 		while(CURRENT_PLANT = 10){
 
+			CURRENT_PLANT = 8;
+			
 			go_straight_check_IR();
 
 			pick_plant();
@@ -1274,7 +1277,11 @@ int main() {
 			go_straight_check_color();
 
 			drop_sequence();
+
+			CURRENT_PLANT = 10;
+			
 		}
+
 
 		//blind_turn( BOARD_DIRECTION );
 
