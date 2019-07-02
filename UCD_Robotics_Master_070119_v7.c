@@ -1257,7 +1257,36 @@ int main() {
 		}
 
 
+		while(CURRENT_PLANT = 9){
+			go_straight_check_IR();
 
+			pick_plant();
+
+			rotate_robot_half_turn(BOARD_DIRECTION);
+
+			rotate_robot_forwards(BOARD_DIRECTION);
+
+			go_to_line();
+
+			rotate_robot(-BOARD_DIRECTION);
+
+			go_straight_check_color();
+
+			drop_sequence();
+
+			go_straight_check_intersection();
+
+			rotate_robot(BOARD_DIRECTION);
+
+			go_straight_check_intersection();
+
+			rotate_robot_backwards(BOARD_DIRECTION);
+
+			rotate_robot_forwards(BOARD_DIRECTION);
+
+			CURRENT_PLANT = CURRENT_PLANT +1;
+		}
+		
 		while(CURRENT_PLANT = 10){
 
 			CURRENT_PLANT = 8;
