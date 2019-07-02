@@ -1307,7 +1307,7 @@ int main() {
 
 			drop_sequence();
 
-			CURRENT_PLANT = 10;
+			CURRENT_PLANT = 11;
 			
 		}
 
